@@ -6,21 +6,87 @@ const {
 	getUserBySocket,
 	removeUserFromRoom,
 } = require("./utils")
+const { verifyToken } = require("../../auth")
+const UserModel = require("../users/schema")
+const cookieParser = require("socket.io-cookie-parser")
+const { DiceRoll } = require("rpg-dice-roller")
 
 const authorize = async (socket, next) => {
-	//const { token } = socket.handshake.auth
+	console.log("********** SOCKET AUTHORIZE MIDDLEWARE**********")
+	console.log("--------------------------------------------------------")
 	console.log("cookies", socket.request.headers.cookie)
+	console.log("only the access token", socket.request.cookies["accessToken"])
 	console.log("--------------------------------------------------------")
 	console.log("accessToken from socket", socket.request.auth)
+	try {
+		const decodedToken = await verifyToken(
+			socket.request.cookies["accessToken"]
+		)
+		if (!decodedToken) {
+			const error = new Error("expired token")
+			error.httpStatusCode = "401"
+			throw error
+		}
+		console.log("DECODED USER ", decodedToken)
+		const user = await UserModel.findById(decodedToken._id)
+
+		console.log(user)
+		if (!user) {
+			throw new Error("user not found in the database")
+			error.httpStatusCode = "404"
+		}
+		socket.user = user
+		next()
+	} catch (error) {
+		console.log(error)
+		//const err = new Error("Please log in")
+		//err.httpStatusCode = 401
+		next(error)
+	}
+}
+
+/**
+ *
+ * @param {string} text a string that may contain one or more dice expression
+ * @return {string} the input with the dice expression's solved in place
+ */
+const diEngine = (text) => {
+	let message = text
+	const dieNotations = [...text.matchAll(/\[(.*?)\]/g)] //we will have a preparser that separates the dice notation from the rest of the message
+	//console.log("message=", text, "die notation=", dieNotation)
+	dieNotations.forEach((dieNotation) => {
+		const rolls = new DiceRoll(dieNotation[1])
+		rolls.roll()
+		message = message.replace(dieNotation[0], rolls.output)
+	})
+	return message
 }
 
 const createSocketServer = (server) => {
 	const io = socketio(server)
 	console.log("socket.io server started")
+	io.use(cookieParser())
 	io.use(authorize)
 
 	io.on("connection", (socket) => {
 		console.log(`New socket connection --> ${socket.id}`)
+		socket.join("lobby")
+		const messageToRoomMembers = {
+			sender: "Admin",
+			text: `welcome to the lobby`,
+			createdAt: new Date(),
+		}
+		socket.broadcast.to("lobby").emit("message", messageToRoomMembers)
+		socket.on("sendMessage", async ({ room, message }) => {
+			const messageContent = {
+				text: message,
+				sender: "user", //user.username,
+				room,
+			}
+			const parsed = diEngine(message)
+			socket.emit("message", { sender: "demo", text: parsed, room })
+			//console.log(message)
+		})
 	})
 
 	/*socket.on("joinRoom", async (data) => {

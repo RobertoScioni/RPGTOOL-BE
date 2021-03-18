@@ -22,7 +22,11 @@ const server = express()
 const httpServer = http.createServer(server)
 createSocketServer(httpServer)
 
-const whitelist = ["http://93.43.219.120", "http://127.0.0.1:3000"]
+const whitelist = [
+	"http://93.43.219.120",
+	"http://127.0.0.1:3000",
+	"http://localhost:3000",
+]
 const corsOptions = {
 	origin: (origin, callback) => {
 		if (whitelist.indexOf(origin) !== -1 || !origin) {

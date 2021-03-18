@@ -20,8 +20,12 @@ const newToken = async (payload, expiration) =>
 	)
 
 //returns the decoded token or trows an error
-const verifyToken = (token) => jwt.decode(token, process.env.JWT_SECRET)
-
+//const verifyToken = (token) => jwt.decode(token, process.env.JWT_SECRET)
+const verifyToken = (token) => {
+	const decoded = jwt.decode(token, process.env.JWT_SECRET)
+	//if (decoded.exp < Date.now() / 1000) return false
+	return decoded
+}
 const refreshTokens = async (oldRefreshToken) => {
 	try {
 		console.log("oldRefreshToken", oldRefreshToken)
@@ -42,7 +46,7 @@ const refreshTokens = async (oldRefreshToken) => {
 			$pull: { refreshTokens: { refreshToken: oldRefreshToken } },
 		})
 		const refreshToken = await newToken({ _id: user._id }, "1 week")
-		const accessToken = await newToken({ _id: user._id }, "1800 s")
+		const accessToken = await newToken({ _id: user._id }, "1 week") //this should expire in 1800s
 		return { accessToken, refreshToken }
 	} catch (error) {
 		console.log(error)
@@ -90,16 +94,21 @@ const authenticate = async (credentials) => {
 const authorize = async (req, res, next) => {
 	try {
 		const decodedToken = await verifyToken(req.cookies.accessToken)
-		const user = await UserModel.findById(decodedToken._id)
+		console.log("DECODED USER ", decodedUser)
+		const user = await UserModel.findById(decodedToken._id) //do i Really want to store the tokens in the user since the user is also stored in the token?
 		console.log("**********AUTHORIZE MIDDLEWARE**********")
 		console.log(user)
 		if (!user) {
+			//if we get here it means that the token was valid but the user did not exist
 			throw new Error("user not found in the database")
 		}
 		req.user = user
 		next()
 	} catch (error) {
 		console.log(error)
+		/*if, for a given access token, there is no valid refresh token in the database, 
+		whe should give a code that can trigger a refresh*/
+
 		const err = new Error("Please log in")
 		err.httpStatusCode = 401
 		next(err)
