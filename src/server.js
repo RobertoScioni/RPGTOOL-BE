@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser")
 const createSocketServer = require("./services/chat")
 
 const usersRouter = require("./services/users")
+const charactersRouter = require("./services/characters")
 
 const {
 	notFoundHandler,
@@ -47,6 +48,7 @@ server.use(express.json())
 server.use(cookieParser())
 server.use(passport.initialize())
 server.use("/users", usersRouter)
+server.use("/characters", charactersRouter)
 
 // ERROR HANDLERS MIDDLEWARES
 
