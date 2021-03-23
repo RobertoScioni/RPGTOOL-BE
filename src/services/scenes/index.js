@@ -5,7 +5,7 @@ const { cloudinary } = require("../../cloudinary")
 const cloudStorage = new CloudinaryStorage({
 	cloudinary: cloudinary,
 	params: {
-		folder: "rpgTool/portraits",
+		folder: "rpgTool/scenes",
 	},
 })
 const cloudMulter = multer({ storage: cloudStorage })
@@ -13,7 +13,6 @@ const cloudMulter = multer({ storage: cloudStorage })
 const { authorize } = require("../../auth")
 
 const CharacterModel = require("./schema")
-const UserModel = require("../users/schema")
 
 const charactersRouter = express.Router()
 charactersRouter.get("/", authorize, async (req, res, next) => {
@@ -37,33 +36,12 @@ charactersRouter.get("/:id", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.get("/byUser/:id", authorize, async (req, res, next) => {
-	try {
-		const profile = await CharacterModel.find({ owner: req.params.id })
-		res.send(profile)
-	} catch (error) {
-		next(error)
-	}
-})
-
 charactersRouter.post("/", authorize, async (req, res, next) => {
 	try {
 		const newCharacter = new CharacterModel(req.body)
-		newCharacter.owner = req.user._id
 		console.log("null? ->", newCharacter._id)
 		const { _id } = await newCharacter.save()
-		console.log("save this inside the user pls", _id)
-		const user = await UserModel.findByIdAndUpdate(
-			req.user._id,
-			{
-				$push: { characters: _id },
-			},
-			{
-				runValidators: true,
-				new: true,
-			}
-		)
-		console.log("user after findByIdAndUpdate", user)
+		console.log(_id)
 		res.status(201).send(_id)
 	} catch (error) {
 		next(error)
@@ -97,34 +75,26 @@ charactersRouter.post(
 	authorize,
 	cloudMulter.single("image"),
 	async (req, res, next) => {
-		console.log(
-			"**********************************************************************"
-		)
 		try {
-			const post = { imageUrl: req.file.path }
-			console.log("request body", req.body)
-			console.log("request user", req.user)
-			console.log("request id", req.params.id)
-			console.log("request file buffer", req.file.buffer)
-			console.log("help")
+			const post = { profilePicUrl: req.file.path }
+			/* const author = await UserSchema.findById(req.params.id, {
+				_id: 0,
+				user: 1,
+			}) */
 			const character = await CharacterModel.findById(req.params.id)
-			console.log("foundCharacter", character)
-			if (String(character.owner) !== String(req.user._id)) {
-				console.log("owner ", typeof character.owner, character.owner)
-				console.log("-user ", typeof req.user._id, req.user._id)
-
+			if (character.user._id !== req.user._id) {
 				const error = new Error(
 					`User does not own the Character with id ${req.params.id}`
 				)
 				error.httpStatusCode = 403
 				return next(error)
 			}
-			console.log(
-				"**********************************************************************"
-			)
+			console.log(req.body)
+			console.log(req.file.buffer)
+			console.log("help")
 			//res.json({ msg: "image uploaded" })
 
-			const newPost = await CharacterModel.findByIdAndUpdate(
+			const newPost = await CharacterSchema.findByIdAndUpdate(
 				req.params.id,
 				post,
 				{
@@ -133,7 +103,7 @@ charactersRouter.post(
 				}
 			)
 			if (newPost) {
-				res.status(201).send("image updated")
+				res.status(201).send("immage updated")
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404
