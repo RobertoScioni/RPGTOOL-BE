@@ -51,14 +51,34 @@ const authorize = async (socket, next) => {
  * @return {string} the input with the dice expression's solved in place
  */
 const diEngine = (text) => {
+	let rolls
 	let message = text
-	const dieNotations = [...text.matchAll(/\[(.*?)\]/g)] //we will have a preparser that separates the dice notation from the rest of the message
-	//console.log("message=", text, "die notation=", dieNotation)
-	dieNotations.forEach((dieNotation) => {
-		const rolls = new DiceRoll(dieNotation[1])
-		rolls.roll()
-		message = message.replace(dieNotation[0], rolls.output)
-	})
+	let dieNotations = []
+	console.log("message=", text)
+	try {
+		rolls = new DiceRoll(message)
+		message = rolls.output
+	} catch (error) {
+		//are there expressions enclosed in square brakets?
+		dieNotations = [...text.matchAll(/\[(.*?)\]/g)]
+		//if no expression was detected try to detect "not dice notation [diceNotation[diceNotation[dice..."
+		if (dieNotations.length === 0)
+			dieNotations = [...text.matchAll(/\[(.[^[]*)/g)]
+		//if no expression was detected try to detect "...]diceNotation]diceNotation]diceNotation] not dice notation"
+		if (dieNotations.length === 0) dieNotations = [...text.matchAll(/(.*?)\]/g)]
+		//console.log(dieNotations)
+		dieNotations.forEach((dieNotation) => {
+			try {
+				rolls = new DiceRoll(dieNotation[1].trim())
+				rolls.roll()
+				message = message.replace(dieNotation[0], " " + rolls.output + " ")
+			} catch (error) {
+				console.log("got an error with this expression", dieNotation[1].trim())
+			}
+		})
+	}
+	console.log("die notation=", dieNotations)
+	console.log("message=", text)
 	return message
 }
 
@@ -70,10 +90,15 @@ const createSocketServer = (server) => {
 
 	io.on("connection", (socket) => {
 		console.log(`New socket connection --> ${socket.id}`)
+		console.log("socket-details", socket)
+		socket.on("room", function (data) {
+			socket.join(data.room_name)
+		})
 		socket.join("lobby")
 		const messageToRoomMembers = {
 			sender: "Admin",
 			text: `welcome to the lobby`,
+			room: `lobby`,
 			createdAt: new Date(),
 		}
 		socket.broadcast.to("lobby").emit("message", messageToRoomMembers)

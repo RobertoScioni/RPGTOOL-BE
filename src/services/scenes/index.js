@@ -12,14 +12,14 @@ const cloudMulter = multer({ storage: cloudStorage })
 
 const { authorize } = require("../../auth")
 
-const CharacterModel = require("./schema")
+const ScenesModel = require("./schema")
 
-const charactersRouter = express.Router()
-charactersRouter.get("/", authorize, async (req, res, next) => {
+const scenesRouter = express.Router()
+scenesRouter.get("/", authorize, async (req, res, next) => {
 	try {
-		console.log("**********GET Character LIST**********")
+		console.log("**********GET Scene LIST**********")
 		console.log(req.user)
-		const users = await CharacterModel.find()
+		const users = await ScenesModel.find()
 		console.log(users)
 		res.send(users)
 	} catch (error) {
@@ -27,20 +27,21 @@ charactersRouter.get("/", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.get("/:id", authorize, async (req, res, next) => {
+scenesRouter.get("/:id", authorize, async (req, res, next) => {
 	try {
-		const profile = await CharacterModel.findById(req.params.id)
+		const profile = await ScenesModel.findById(req.params.id)
 		res.send(profile)
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.post("/", authorize, async (req, res, next) => {
+scenesRouter.post("/", authorize, async (req, res, next) => {
 	try {
-		const newCharacter = new CharacterModel(req.body)
-		console.log("null? ->", newCharacter._id)
-		const { _id } = await newCharacter.save()
+		const newScene = new ScenesModel(req.body)
+		newScene.owner = req.user._id
+		console.log("null? ->", newScene._id)
+		const { _id } = await newScene.save()
 		console.log(_id)
 		res.status(201).send(_id)
 	} catch (error) {
@@ -48,60 +49,54 @@ charactersRouter.post("/", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.put("/:id", authorize, async (req, res, next) => {
+scenesRouter.put("/:id", authorize, async (req, res, next) => {
 	try {
 		const updates = Object.keys(req.body)
-		const character = await CharacterModel.findById(req.params.id)
+		const scene = await ScenesModel.findById(req.params.id)
 		//add check for ownership before updating
-		updates.forEach((update) => (character[update] = req.body[update]))
-		await charactet.save()
+		updates.forEach((update) => (scene[update] = req.body[update]))
+		await scene.save()
 		res.send(req.user)
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.delete("/:id", authorize, async (req, res, next) => {
+scenesRouter.delete("/:id", authorize, async (req, res, next) => {
 	try {
-		const character = await CharacterModel.findById(req.params.id)
-		await character.deleteOne(res.send("Deleted"))
+		const scene = await ScenesModel.findById(req.params.id)
+		await scene.deleteOne(res.send("Deleted"))
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.post(
+scenesRouter.post(
 	"/imageUpload/:id",
 	authorize,
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { profilePicUrl: req.file.path }
-			/* const author = await UserSchema.findById(req.params.id, {
-				_id: 0,
-				user: 1,
-			}) */
-			const character = await CharacterModel.findById(req.params.id)
-			if (character.user._id !== req.user._id) {
+			const post = { imageUrl: req.file.path }
+			const scene = await ScenesModel.findById(req.params.id)
+			console.log(scene)
+			if (String(scene.owner._id) !== String(req.user._id)) {
 				const error = new Error(
-					`User does not own the Character with id ${req.params.id}`
+					`User does not own the Scene with id ${req.params.id}`
 				)
 				error.httpStatusCode = 403
 				return next(error)
 			}
-			console.log(req.body)
-			console.log(req.file.buffer)
+			console.log("body", req.body)
+			console.log("file", req.file.buffer)
+			console.log("image uploaded", post)
 			console.log("help")
 			//res.json({ msg: "image uploaded" })
 
-			const newPost = await CharacterSchema.findByIdAndUpdate(
-				req.params.id,
-				post,
-				{
-					runValidators: true,
-					new: true,
-				}
-			)
+			const newPost = await ScenesModel.findByIdAndUpdate(req.params.id, post, {
+				runValidators: true,
+				new: true,
+			})
 			if (newPost) {
 				res.status(201).send("immage updated")
 			} else {
@@ -116,4 +111,4 @@ charactersRouter.post(
 	}
 )
 
-module.exports = charactersRouter
+module.exports = scenesRouter

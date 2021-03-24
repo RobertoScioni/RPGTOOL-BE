@@ -63,7 +63,6 @@ charactersRouter.post("/", authorize, async (req, res, next) => {
 				new: true,
 			}
 		)
-		console.log("user after findByIdAndUpdate", user)
 		res.status(201).send(_id)
 	} catch (error) {
 		next(error)

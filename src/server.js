@@ -11,6 +11,7 @@ const createSocketServer = require("./services/chat")
 
 const usersRouter = require("./services/users")
 const charactersRouter = require("./services/characters")
+const scenesRouter = require("./services/scenes")
 
 const {
 	notFoundHandler,
@@ -49,6 +50,7 @@ server.use(cookieParser())
 server.use(passport.initialize())
 server.use("/users", usersRouter)
 server.use("/characters", charactersRouter)
+server.use("/scenes", scenesRouter)
 
 // ERROR HANDLERS MIDDLEWARES
 
