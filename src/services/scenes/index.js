@@ -52,6 +52,7 @@ scenesRouter.post("/", authorize, async (req, res, next) => {
 scenesRouter.put("/:id", authorize, async (req, res, next) => {
 	try {
 		const updates = Object.keys(req.body)
+		console.log(updates)
 		const scene = await ScenesModel.findById(req.params.id)
 		//add check for ownership before updating
 		updates.forEach((update) => (scene[update] = req.body[update]))

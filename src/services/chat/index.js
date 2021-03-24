@@ -87,29 +87,40 @@ const createSocketServer = (server) => {
 	console.log("socket.io server started")
 	io.use(cookieParser())
 	io.use(authorize)
-
+	let room = ""
 	io.on("connection", (socket) => {
 		console.log(`New socket connection --> ${socket.id}`)
-		console.log("socket-details", socket)
-		socket.on("room", function (data) {
-			socket.join(data.room_name)
+		//console.log("socket-details", socket)
+		socket.on("room", function (room) {
+			//room = data
+			console.log("room_name", room.name)
+			socket.join(room.name)
 		})
-		socket.join("lobby")
-		const messageToRoomMembers = {
+		//socket.join("lobby")
+		let messageToRoomMembers = {
 			sender: "Admin",
 			text: `welcome to the lobby`,
 			room: `lobby`,
 			createdAt: new Date(),
 		}
 		socket.broadcast.to("lobby").emit("message", messageToRoomMembers)
+		messageToRoomMembers = {
+			sender: "Admin",
+			text: `welcome to your scene`,
+			room: `scene`,
+			createdAt: new Date(),
+		}
+		socket.broadcast.to(room.name).emit("message", messageToRoomMembers)
 		socket.on("sendMessage", async ({ room, message }) => {
+			console.log("a user is sending a message")
+			console.log(room, message)
 			const messageContent = {
 				text: message,
 				sender: "user", //user.username,
 				room,
 			}
 			const parsed = diEngine(message)
-			socket.emit("message", { sender: "demo", text: parsed, room })
+			io.in(room).emit("message", { sender: "demo", text: parsed, room })
 			//console.log(message)
 		})
 	})

@@ -19,7 +19,7 @@ usersRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET USER LIST**********")
 		console.log(req.user)
-		const users = await UserModel.find()
+		const users = await UserModel.find().populate("characters")
 		console.log(users)
 		res.send(users)
 	} catch (error) {

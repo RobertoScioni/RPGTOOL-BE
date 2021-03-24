@@ -11,7 +11,7 @@ const UserSchema = new Schema(
 			type: String,
 			required: true,
 		},
-		userName: String,
+		name: String,
 		profilePicUrl: String,
 		refreshTokens: {
 			type: [
@@ -26,7 +26,7 @@ const UserSchema = new Schema(
 			],
 			select: false,
 		},
-		characters: [{ type: Schema.Types.ObjectId, ref: "characters" }],
+		characters: [{ type: Schema.Types.ObjectId, ref: "Character" }],
 	},
 	{ timestamps: true }
 )

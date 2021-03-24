@@ -6,7 +6,7 @@ const SceneSchema = new Schema(
 		dsc: String,
 		imageUrl: String,
 		owner: { type: Schema.Types.ObjectId, ref: "Profiles" },
-		members: [{ type: Schema.Types.ObjectId, ref: "users" }],
+		members: [],
 		messages: [
 			{
 				user: { type: Schema.Types.ObjectId, ref: "users" },
