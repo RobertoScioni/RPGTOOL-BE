@@ -10,6 +10,8 @@ const cookieParser = require("cookie-parser")
 const createSocketServer = require("./services/chat")
 
 const usersRouter = require("./services/users")
+const charactersRouter = require("./services/characters")
+const scenesRouter = require("./services/scenes")
 
 const {
 	notFoundHandler,
@@ -22,7 +24,11 @@ const server = express()
 const httpServer = http.createServer(server)
 createSocketServer(httpServer)
 
-const whitelist = ["http://93.43.219.120", "http://127.0.0.1:3000"]
+const whitelist = [
+	"http://93.43.219.120",
+	"http://127.0.0.1:3000",
+	"http://localhost:3000",
+]
 const corsOptions = {
 	origin: (origin, callback) => {
 		if (whitelist.indexOf(origin) !== -1 || !origin) {
@@ -43,6 +49,8 @@ server.use(express.json())
 server.use(cookieParser())
 server.use(passport.initialize())
 server.use("/users", usersRouter)
+server.use("/characters", charactersRouter)
+server.use("/scenes", scenesRouter)
 
 // ERROR HANDLERS MIDDLEWARES
 

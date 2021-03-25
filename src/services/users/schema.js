@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs")
 
 const UserSchema = new Schema(
 	{
-		googleId: String,
 		password: {
 			type: String,
 			select: false,
@@ -12,7 +11,7 @@ const UserSchema = new Schema(
 			type: String,
 			required: true,
 		},
-		userName: String,
+		name: String,
 		profilePicUrl: String,
 		refreshTokens: {
 			type: [
@@ -27,6 +26,7 @@ const UserSchema = new Schema(
 			],
 			select: false,
 		},
+		characters: [{ type: Schema.Types.ObjectId, ref: "Character" }],
 	},
 	{ timestamps: true }
 )

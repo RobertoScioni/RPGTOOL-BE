@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"start": "node ./src/server.js",
 		"dev": "nodemon -r dotenv/config ./src/server.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -26,6 +27,8 @@
 		"passport": "^0.4.1",
 		"passport-google-oauth20": "^2.0.0",
 		"query-to-mongo": "^0.10.1",
-		"socket.io": "^2.4.1"
+		"rpg-dice-roller": "^4.5.2",
+		"socket.io": "^2.4.1",
+		"socket.io-cookie-parser": "^1.0.0"
 	}
 }

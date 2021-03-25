@@ -6,21 +6,124 @@ const {
 	getUserBySocket,
 	removeUserFromRoom,
 } = require("./utils")
+const { verifyToken } = require("../../auth")
+const UserModel = require("../users/schema")
+const cookieParser = require("socket.io-cookie-parser")
+const { DiceRoll } = require("rpg-dice-roller")
 
 const authorize = async (socket, next) => {
-	//const { token } = socket.handshake.auth
+	console.log("********** SOCKET AUTHORIZE MIDDLEWARE**********")
+	console.log("--------------------------------------------------------")
 	console.log("cookies", socket.request.headers.cookie)
+	console.log("only the access token", socket.request.cookies["accessToken"])
 	console.log("--------------------------------------------------------")
 	console.log("accessToken from socket", socket.request.auth)
+	try {
+		const decodedToken = await verifyToken(
+			socket.request.cookies["accessToken"]
+		)
+		if (!decodedToken) {
+			const error = new Error("expired token")
+			error.httpStatusCode = "401"
+			throw error
+		}
+		//console.log("DECODED USER ", decodedToken)
+		const user = await UserModel.findById(decodedToken._id)
+
+		console.log(user)
+		if (!user) {
+			throw new Error("user not found in the database")
+			error.httpStatusCode = "404"
+		}
+		socket.user = user
+		next()
+	} catch (error) {
+		console.log("error in chat. js authorize middleware")
+		console.log(error)
+		//const err = new Error("Please log in")
+		//err.httpStatusCode = 401
+		next(error)
+	}
+}
+
+/**
+ *
+ * @param {string} text a string that may contain one or more dice expression
+ * @return {string} the input with the dice expression's solved in place
+ */
+const diEngine = (text) => {
+	let rolls
+	let message = text
+	let dieNotations = []
+	console.log("message=", text)
+	try {
+		rolls = new DiceRoll(message)
+		message = rolls.output
+	} catch (error) {
+		//are there expressions enclosed in square brakets?
+		dieNotations = [...text.matchAll(/\[(.*?)\]/g)]
+		//if no expression was detected try to detect "not dice notation [diceNotation[diceNotation[dice..."
+		if (dieNotations.length === 0)
+			dieNotations = [...text.matchAll(/\[(.[^[]*)/g)]
+		//if no expression was detected try to detect "...]diceNotation]diceNotation]diceNotation] not dice notation"
+		if (dieNotations.length === 0) dieNotations = [...text.matchAll(/(.*?)\]/g)]
+		//console.log(dieNotations)
+		dieNotations.forEach((dieNotation) => {
+			try {
+				rolls = new DiceRoll(dieNotation[1].trim())
+				rolls.roll()
+				message = message.replace(dieNotation[0], " " + rolls.output + " ")
+			} catch (error) {
+				console.log("got an error with this expression", dieNotation[1].trim())
+			}
+		})
+	}
+	//console.log("die notation=", dieNotations)
+	//console.log("message=", text)
+	return message
 }
 
 const createSocketServer = (server) => {
 	const io = socketio(server)
 	console.log("socket.io server started")
+	io.use(cookieParser())
 	io.use(authorize)
-
+	let room = ""
 	io.on("connection", (socket) => {
 		console.log(`New socket connection --> ${socket.id}`)
+		//console.log("socket-details", socket)
+		socket.on("room", function (room) {
+			//room = data
+			console.log("room_name", room.name)
+			socket.join(room.name)
+		})
+		//socket.join("lobby")
+		let messageToRoomMembers = {
+			sender: "Admin",
+			text: `welcome to the lobby`,
+			room: `lobby`,
+			createdAt: new Date(),
+		}
+		socket.broadcast.to("lobby").emit("message", messageToRoomMembers)
+		messageToRoomMembers = {
+			sender: "Admin",
+			text: `welcome to your scene`,
+			room: `scene`,
+			createdAt: new Date(),
+		}
+		socket.broadcast.to(room.name).emit("message", messageToRoomMembers)
+		socket.on("sendMessage", async ({ room, message }) => {
+			console.log("a user is sending a message")
+			console.log(room, message)
+			const messageContent = {
+				text: message,
+				sender: "user", //user.username,
+				room,
+			}
+			const parsed = diEngine(message)
+			io.in(room).emit("message", { sender: "demo", text: parsed, room })
+			//console.log(message)
+		})
 	})
 
 	/*socket.on("joinRoom", async (data) => {

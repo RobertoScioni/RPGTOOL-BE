@@ -19,17 +19,9 @@ usersRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET USER LIST**********")
 		console.log(req.user)
-		const users = await UserModel.find()
+		const users = await UserModel.find().populate("characters")
 		console.log(users)
 		res.send(users)
-	} catch (error) {
-		next(error)
-	}
-})
-
-usersRouter.get("/profile", authorize, async (req, res, next) => {
-	try {
-		res.send(req.user)
 	} catch (error) {
 		next(error)
 	}
@@ -41,6 +33,19 @@ usersRouter.get("/me", authorize, async (req, res, next) => {
 		const profile = await UserModel.find(req.user._id)
 		console.log("got this as profile", profile)
 		res.send(profile[0])
+	} catch (error) {
+		next(error)
+	}
+})
+
+usersRouter.get("/my-chars", authorize, async (req, res, next) => {
+	try {
+		console.log("help me")
+		const profile = await UserModel.findById(req.user._id).populate(
+			"characters"
+		)
+		console.log("got this as profile", profile)
+		res.send(profile.characters)
 	} catch (error) {
 		next(error)
 	}
@@ -84,13 +89,15 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("tokens", tokens)
 		res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
-			sameSite: "lax",
+			sameSite: "none",
+			secure: true,
 		})
 		res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
-			sameSite: "lax",
+			sameSite: "none",
+			secure: true,
 		})
-		res.send(tokens)
+		res.send(tokens._id)
 	} catch (error) {
 		next(error)
 	}
@@ -240,7 +247,7 @@ usersRouter.post(
 	async (req, res, next) => {
 		try {
 			const post = { profilePicUrl: req.file.path }
-			const author = await UserSchema.findById(req.params.id, {
+			const author = await UserModel.findById(req.params.id, {
 				_id: 0,
 				user: 1,
 			})
@@ -256,7 +263,7 @@ usersRouter.post(
 			console.log("help")
 			//res.json({ msg: "image uploaded" })
 
-			const newPost = await UserSchema.findByIdAndUpdate(req.params.id, post, {
+			const newPost = await UserModel.findByIdAndUpdate(req.params.id, post, {
 				runValidators: true,
 				new: true,
 			})

@@ -1,9 +1,10 @@
 const { Schema, model } = require("mongoose")
 
-const EntitySchema = new Schema({
+const CharacterSchema = new Schema({
 	name: String,
+	dsc: String,
 	imageUrl: String,
-	owners: [{ type: Schema.Types.ObjectId, ref: "Profiles" }],
+	owner: { type: Schema.Types.ObjectId, ref: "users" },
 })
 
-module.exports = model("Entity", EntitySchema)
+module.exports = model("Character", CharacterSchema)
