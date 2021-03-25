@@ -75,7 +75,7 @@ charactersRouter.put("/:id", authorize, async (req, res, next) => {
 		const character = await CharacterModel.findById(req.params.id)
 		//add check for ownership before updating
 		updates.forEach((update) => (character[update] = req.body[update]))
-		await charactet.save()
+		await character.save()
 		res.send(req.user)
 	} catch (error) {
 		next(error)

@@ -80,7 +80,7 @@ const authenticate = async (credentials) => {
 					},
 					{ new: true }
 				)
-				return { accessToken, refreshToken }
+				return { accessToken, refreshToken, _id: user._id }
 			}
 		}
 	} catch (error) {

@@ -27,20 +27,25 @@ usersRouter.get("/", authorize, async (req, res, next) => {
 	}
 })
 
-usersRouter.get("/profile", authorize, async (req, res, next) => {
-	try {
-		res.send(req.user)
-	} catch (error) {
-		next(error)
-	}
-})
-
 usersRouter.get("/me", authorize, async (req, res, next) => {
 	try {
 		console.log("help me")
 		const profile = await UserModel.find(req.user._id)
 		console.log("got this as profile", profile)
 		res.send(profile[0])
+	} catch (error) {
+		next(error)
+	}
+})
+
+usersRouter.get("/my-chars", authorize, async (req, res, next) => {
+	try {
+		console.log("help me")
+		const profile = await UserModel.findById(req.user._id).populate(
+			"characters"
+		)
+		console.log("got this as profile", profile)
+		res.send(profile.characters)
 	} catch (error) {
 		next(error)
 	}
@@ -84,13 +89,15 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("tokens", tokens)
 		res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
-			sameSite: "lax",
+			sameSite: "none",
+			secure: true,
 		})
 		res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
-			sameSite: "lax",
+			sameSite: "none",
+			secure: true,
 		})
-		res.send(tokens)
+		res.send(tokens._id)
 	} catch (error) {
 		next(error)
 	}

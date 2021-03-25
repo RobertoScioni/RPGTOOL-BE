@@ -27,7 +27,7 @@ const authorize = async (socket, next) => {
 			error.httpStatusCode = "401"
 			throw error
 		}
-		console.log("DECODED USER ", decodedToken)
+		//console.log("DECODED USER ", decodedToken)
 		const user = await UserModel.findById(decodedToken._id)
 
 		console.log(user)
@@ -38,6 +38,7 @@ const authorize = async (socket, next) => {
 		socket.user = user
 		next()
 	} catch (error) {
+		console.log("error in chat. js authorize middleware")
 		console.log(error)
 		//const err = new Error("Please log in")
 		//err.httpStatusCode = 401
@@ -77,8 +78,8 @@ const diEngine = (text) => {
 			}
 		})
 	}
-	console.log("die notation=", dieNotations)
-	console.log("message=", text)
+	//console.log("die notation=", dieNotations)
+	//console.log("message=", text)
 	return message
 }
 

@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose")
 
 const CharacterSchema = new Schema({
 	name: String,
-	bio: String,
+	dsc: String,
 	imageUrl: String,
 	owner: { type: Schema.Types.ObjectId, ref: "users" },
 })
