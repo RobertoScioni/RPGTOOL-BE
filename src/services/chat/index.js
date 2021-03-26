@@ -115,9 +115,10 @@ const createSocketServer = (server) => {
 		socket.on("sendMessage", async ({ room, message }) => {
 			console.log("a user is sending a message")
 			console.log(room, message)
+			const user = await getUserBySocket(room, socket.id)
 			const messageContent = {
 				text: message,
-				sender: "user", //user.username,
+				sender: user.username,
 				room,
 			}
 			const parsed = diEngine(message)
