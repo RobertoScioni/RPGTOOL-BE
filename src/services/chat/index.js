@@ -12,12 +12,12 @@ const cookieParser = require("socket.io-cookie-parser")
 const { DiceRoll } = require("rpg-dice-roller")
 
 const authorize = async (socket, next) => {
-	console.log("********** SOCKET AUTHORIZE MIDDLEWARE**********")
+	/* console.log("********** SOCKET AUTHORIZE MIDDLEWARE**********")
 	console.log("--------------------------------------------------------")
 	console.log("cookies", socket.request.headers.cookie)
 	console.log("only the access token", socket.request.cookies["accessToken"])
 	console.log("--------------------------------------------------------")
-	console.log("accessToken from socket", socket.request.auth)
+	console.log("accessToken from socket", socket.request.auth) */
 	try {
 		const decodedToken = await verifyToken(
 			socket.request.cookies["accessToken"]
@@ -30,7 +30,7 @@ const authorize = async (socket, next) => {
 		//console.log("DECODED USER ", decodedToken)
 		const user = await UserModel.findById(decodedToken._id)
 
-		console.log(user)
+		// console.log(user)
 		if (!user) {
 			throw new Error("user not found in the database")
 			error.httpStatusCode = "404"
@@ -38,8 +38,8 @@ const authorize = async (socket, next) => {
 		socket.user = user
 		next()
 	} catch (error) {
-		console.log("error in chat. js authorize middleware")
-		console.log(error)
+		/* console.log("error in chat. js authorize middleware")
+		console.log(error) */
 		//const err = new Error("Please log in")
 		//err.httpStatusCode = 401
 		next(error)
@@ -94,8 +94,8 @@ const createSocketServer = (server) => {
 		//console.log("socket-details", socket)
 		socket.on("room", function (room) {
 			//room = data
-			console.log("room_name", room.name)
-			socket.join(room.name)
+			console.log("room_name", room)
+			socket.join(room._id)
 		})
 		//socket.join("lobby")
 		let messageToRoomMembers = {
@@ -111,19 +111,28 @@ const createSocketServer = (server) => {
 			room: `scene`,
 			createdAt: new Date(),
 		}
-		socket.broadcast.to(room.name).emit("message", messageToRoomMembers)
-		socket.on("sendMessage", async ({ room, message }) => {
-			console.log("a user is sending a message")
-			console.log(room, message)
-			const messageContent = {
-				text: message,
-				sender: "user", //user.username,
-				room,
+		socket.broadcast.to(room._id).emit("message", messageToRoomMembers)
+		socket.on(
+			"sendMessage",
+			async ({ room, user, message, toPlayers, toCharacters, as }) => {
+				console.log("a user is sending a message")
+				console.log(room, user.name, message, toPlayers, toCharacters, as)
+				const messageContent = {
+					text: message,
+					sender: "user", //user.username,
+					room,
+				}
+				const parsed = diEngine(message)
+				io.in(room).emit("message", {
+					sender: user.name,
+					text: parsed,
+					room,
+					as,
+					toCharacters,
+				})
+				//console.log(message)
 			}
-			const parsed = diEngine(message)
-			io.in(room).emit("message", { sender: "demo", text: parsed, room })
-			//console.log(message)
-		})
+		)
 	})
 
 	/*socket.on("joinRoom", async (data) => {

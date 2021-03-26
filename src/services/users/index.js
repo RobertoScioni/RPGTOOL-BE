@@ -89,15 +89,16 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("tokens", tokens)
 		res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
-			sameSite: "none",
-			secure: true,
+			sameSite: "lax",
+			/* sameSite: "none",
+			secure: true, */
 		})
 		res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
 			sameSite: "none",
 			secure: true,
 		})
-		res.send(tokens._id)
+		res.send({ id: tokens._id })
 	} catch (error) {
 		next(error)
 	}

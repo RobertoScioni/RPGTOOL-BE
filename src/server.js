@@ -71,10 +71,11 @@ mongoose
 	})
 	.then(
 		httpServer.listen(port, () => {
+			console.log("******************NEW INSTANCE******************")
 			console.log("Running on port", port)
-			endpoints.forEach((endpoint) => {
+			/* endpoints.forEach((endpoint) => {
 				console.log(endpoint.methods, " - ", endpoint.path)
-			})
+			}) */
 		})
 	)
 	.catch((err) => console.log(err))

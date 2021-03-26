@@ -94,10 +94,10 @@ const authenticate = async (credentials) => {
 const authorize = async (req, res, next) => {
 	try {
 		const decodedToken = await verifyToken(req.cookies.accessToken)
-		console.log("DECODED USER ", decodedToken)
+		//console.log("DECODED USER ", decodedToken)
 		const user = await UserModel.findById(decodedToken._id) //do i Really want to store the tokens in the user since the user is also stored in the token?
-		console.log("**********AUTHORIZE MIDDLEWARE**********")
-		console.log(user)
+		/* console.log("**********AUTHORIZE MIDDLEWARE**********")
+		console.log(user) */
 		if (!user) {
 			//if we get here it means that the token was valid but the user did not exist
 			throw new Error("user not found in the database")
