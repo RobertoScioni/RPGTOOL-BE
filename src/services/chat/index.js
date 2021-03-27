@@ -53,34 +53,41 @@ const authorize = async (socket, next) => {
  */
 const diEngine = (text) => {
 	let rolls
-	let message = text
-	let dieNotations = []
+	let message = []
+	let splitted = text.split(/(\[.*?\])/g)
+	let rollMap = {}
 	console.log("message=", text)
 	try {
-		rolls = new DiceRoll(message)
-		message = rolls.output
+		rolls = new DiceRoll(text)
+		console.log("####################", splitted)
+		splitted[0] = rolls.output
+		rollMap[rolls.output] = rolls.total
+		return { splitted, rollMap }
 	} catch (error) {
 		//are there expressions enclosed in square brakets?
-		dieNotations = [...text.matchAll(/\[(.*?)\]/g)]
+		splitted = text.split(/\[(.*?)\]/g)
 		//if no expression was detected try to detect "not dice notation [diceNotation[diceNotation[dice..."
-		if (dieNotations.length === 0)
-			dieNotations = [...text.matchAll(/\[(.[^[]*)/g)]
+		if (splitted.length === 1) splitted = text.split(/\[(.[^[]*)/g)
 		//if no expression was detected try to detect "...]diceNotation]diceNotation]diceNotation] not dice notation"
-		if (dieNotations.length === 0) dieNotations = [...text.matchAll(/(.*?)\]/g)]
-		//console.log(dieNotations)
-		dieNotations.forEach((dieNotation) => {
+		if (splitted.length === 1) splitted = text.split(/(.*?)\]/g)
+		splitted.forEach((dieNotation, index) => {
 			try {
-				rolls = new DiceRoll(dieNotation[1].trim())
+				rolls = new DiceRoll(dieNotation)
 				rolls.roll()
-				message = message.replace(dieNotation[0], " " + rolls.output + " ")
+				rollMap[rolls.output] = rolls.total
+				splitted[index] = rolls.output
 			} catch (error) {
-				console.log("got an error with this expression", dieNotation[1].trim())
+				/*console.log(
+					"got an error with this expression",
+					dieNotation[1].trim(),
+					error
+				)*/
+				console.log(dieNotation, " was not an expression ", error)
 			}
 		})
+		console.log("inside die engine after the loop message value", splitted)
+		return { splitted, rollMap }
 	}
-	//console.log("die notation=", dieNotations)
-	//console.log("message=", text)
-	return message
 }
 
 const createSocketServer = (server) => {
@@ -91,6 +98,7 @@ const createSocketServer = (server) => {
 	let room = ""
 	io.on("connection", (socket) => {
 		console.log(`New socket connection --> ${socket.id}`)
+		socket.db_id = socket.handshake.query.db_id
 		//console.log("socket-details", socket)
 		socket.on("room", function (room) {
 			//room = data
@@ -116,20 +124,55 @@ const createSocketServer = (server) => {
 			"sendMessage",
 			async ({ room, user, message, toPlayers, toCharacters, as }) => {
 				console.log("a user is sending a message")
-				console.log(room, user.name, message, toPlayers, toCharacters, as)
+				//console.log(room, user.name, message, toPlayers, toCharacters, as)
 				const messageContent = {
 					text: message,
 					sender: "user", //user.username,
 					room,
 				}
 				const parsed = diEngine(message)
-				io.in(room).emit("message", {
-					sender: user.name,
-					text: parsed,
-					room,
-					as,
-					toCharacters,
-				})
+				console.log("PARSED", parsed)
+				if (toPlayers.length === 0) {
+					console.log("ROOM: ", room)
+					io.in(room).emit("message", {
+						sender: { _id: user._id, name: user.name },
+						splitted: parsed.splitted,
+						//tooltips: parsed.tooltips,
+						//results: parsed.results,
+						rollMap: parsed.rollMap,
+						room,
+						as,
+						toCharacters,
+					})
+				} else {
+					console.log(
+						"---------------------------------------------------------------------------------------"
+					)
+					console.log("should be a pm to", toPlayers)
+
+					for (client in io.sockets.clients(room._id).sockets) {
+						if (
+							toPlayers.some(
+								(player) =>
+									io.sockets.clients(room._id).sockets[client].user.id ===
+									player._id
+							)
+						)
+							io.to(client).emit("message", {
+								sender: { _id: user._id, name: user.name },
+								splitted: parsed.splitted,
+								tooltips: parsed.tooltips,
+								results: parsed.results,
+								rollMap: parsed.rollMap,
+								room,
+								as,
+								toCharacters,
+							})
+					}
+					//remember to add self sending for pm's as they stand now you can send them but you will not see them
+
+					//io.in(room).emit("message", {})
+				}
 				//console.log(message)
 			}
 		)
