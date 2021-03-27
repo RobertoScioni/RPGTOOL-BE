@@ -167,6 +167,7 @@ const createSocketServer = (server) => {
 								room,
 								as,
 								toCharacters,
+								toPlayers,
 							})
 					}
 					//remember to add self sending for pm's as they stand now you can send them but you will not see them
