@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser")
 const createSocketServer = require("./services/chat")
 
 const usersRouter = require("./services/users")
+const campaignsRouter = require("./services/campaigns")
 const charactersRouter = require("./services/characters")
 const scenesRouter = require("./services/scenes")
 
@@ -49,6 +50,7 @@ server.use(express.json())
 server.use(cookieParser())
 server.use(passport.initialize())
 server.use("/users", usersRouter)
+server.use("/campaigns", campaignsRouter)
 server.use("/characters", charactersRouter)
 server.use("/scenes", scenesRouter)
 

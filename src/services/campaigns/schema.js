@@ -1,13 +1,13 @@
 const { Schema, model } = require("mongoose")
 
-const SceneSchema = new Schema(
+const CampaignSchema = new Schema(
 	{
 		name: String,
 		dsc: String,
 		imageUrl: String,
-		campaign: { type: Schema.Types.ObjectId, ref: "Campaigns" },
 		owner: { type: Schema.Types.ObjectId, ref: "users" },
 		members: [],
+		scenes: [{ type: Schema.Types.ObjectId, ref: "Scene" }],
 		messages: [
 			{
 				user: { type: Schema.Types.ObjectId, ref: "users" },
@@ -21,4 +21,4 @@ const SceneSchema = new Schema(
 	{ timestamps: true }
 )
 
-module.exports = model("Scene", SceneSchema)
+module.exports = model("Campaigns", CampaignSchema)
