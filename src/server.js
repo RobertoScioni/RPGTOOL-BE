@@ -26,6 +26,7 @@ const httpServer = http.createServer(server)
 createSocketServer(httpServer)
 
 const whitelist = [
+	"https://rpgtool-fe.vercel.app",
 	"https://rpgtool-fe-robertoscioni.vercel.app",
 	"https://rpgtool-fe-bsvlxbd0t-robertoscioni.vercel.app",
 	"http://93.43.219.120",
