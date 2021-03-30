@@ -8,15 +8,7 @@ const CampaignSchema = new Schema(
 		owner: { type: Schema.Types.ObjectId, ref: "users" },
 		members: [],
 		scenes: [{ type: Schema.Types.ObjectId, ref: "Scene" }],
-		messages: [
-			{
-				user: { type: Schema.Types.ObjectId, ref: "users" },
-				recipients: [{ type: Schema.Types.ObjectId, ref: "users" }],
-				name: String,
-				message: String,
-				imageUrl: String,
-			},
-		],
+		messages: { type: [], select: false },
 	},
 	{ timestamps: true }
 )

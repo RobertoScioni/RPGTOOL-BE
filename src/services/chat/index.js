@@ -1,5 +1,5 @@
 const socketio = require("socket.io")
-const MessageModel = require("./messageSchema")
+const CampaignModel = require("../campaigns/schema")
 const {
 	addUserToRoom,
 	getUsersInRoom,
@@ -125,31 +125,35 @@ const createSocketServer = (server) => {
 			async ({ room, user, message, toPlayers, toCharacters, as }) => {
 				console.log("a user is sending a message")
 				//console.log(room, user.name, message, toPlayers, toCharacters, as)
-				const messageContent = {
-					text: message,
-					sender: "user", //user.username,
-					room,
-				}
+				let messageContent
 				const parsed = diEngine(message)
 				console.log("PARSED", parsed)
+
 				if (toPlayers.length === 0) {
 					console.log("ROOM: ", room)
-					io.in(room).emit("message", {
+					messageContent = {
 						sender: { _id: user._id, name: user.name },
 						splitted: parsed.splitted,
-						//tooltips: parsed.tooltips,
-						//results: parsed.results,
 						rollMap: parsed.rollMap,
-						room,
 						as,
 						toCharacters,
-					})
+					}
+					io.in(room).emit("message", messageContent)
 				} else {
 					console.log(
 						"---------------------------------------------------------------------------------------"
 					)
 					console.log("should be a pm to", toPlayers)
-
+					messageContent = {
+						sender: { _id: user._id, name: user.name },
+						splitted: parsed.splitted,
+						tooltips: parsed.tooltips,
+						results: parsed.results,
+						rollMap: parsed.rollMap,
+						as,
+						toCharacters,
+						toPlayers,
+					}
 					for (client in io.sockets.clients(room._id).sockets) {
 						if (
 							toPlayers.some(
@@ -158,23 +162,19 @@ const createSocketServer = (server) => {
 									player._id
 							)
 						)
-							io.to(client).emit("message", {
-								sender: { _id: user._id, name: user.name },
-								splitted: parsed.splitted,
-								tooltips: parsed.tooltips,
-								results: parsed.results,
-								rollMap: parsed.rollMap,
-								room,
-								as,
-								toCharacters,
-								toPlayers,
-							})
+							io.to(client).emit("message", messageContent)
 					}
 					//remember to add self sending for pm's as they stand now you can send them but you will not see them
 
-					//io.in(room).emit("message", {})
+					//save message content in the db
 				}
-				//console.log(message)
+				console.log("##############")
+				console.log("room id", room, "message", messageContent)
+
+				let dbres = await CampaignModel.findByIdAndUpdate(room, {
+					$push: { messages: messageContent },
+				})
+				console.log("database response", dbres)
 			}
 		)
 	})

@@ -12,7 +12,8 @@ const UserSchema = new Schema(
 			required: true,
 		},
 		name: String,
-		profilePicUrl: String,
+		dsc: String,
+		imageUrl: String,
 		refreshTokens: {
 			type: [
 				{

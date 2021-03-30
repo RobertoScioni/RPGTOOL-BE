@@ -30,7 +30,9 @@ usersRouter.get("/", authorize, async (req, res, next) => {
 usersRouter.get("/me", authorize, async (req, res, next) => {
 	try {
 		console.log("help me")
-		const profile = await UserModel.find(req.user._id)
+		const profile = await UserModel.find(req.user._id).select(
+			"name dsc imageUrl"
+		)
 		console.log("got this as profile", profile)
 		res.send(profile[0])
 	} catch (error) {
@@ -242,29 +244,14 @@ usersRouter.post("/refreshToken", async (req, res, next) => {
 })
 
 usersRouter.post(
-	"/imageUpload/:id",
+	"/imageUpload/me",
 	authorize,
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { profilePicUrl: req.file.path }
-			const author = await UserModel.findById(req.params.id, {
-				_id: 0,
-				user: 1,
-			})
-			if (author.user.userName !== req.user.userName) {
-				const error = new Error(
-					`User does not own the Post with id ${req.params.id}`
-				)
-				error.httpStatusCode = 403
-				return next(error)
-			}
-			console.log(req.body)
-			console.log(req.file.buffer)
-			console.log("help")
-			//res.json({ msg: "image uploaded" })
+			const post = { imageUrl: req.file.path }
 
-			const newPost = await UserModel.findByIdAndUpdate(req.params.id, post, {
+			const newPost = await UserModel.findByIdAndUpdate(req.user._id, post, {
 				runValidators: true,
 				new: true,
 			})

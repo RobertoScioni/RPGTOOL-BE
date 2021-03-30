@@ -38,6 +38,28 @@ campaignsRouter.get("/:id", authorize, async (req, res, next) => {
 	}
 })
 
+campaignsRouter.get("/:id/messages", authorize, async (req, res, next) => {
+	try {
+		const messages = await CampaignsModel.findById(req.params.id).select(
+			"messages"
+		)
+		console.log("#################", req.user._id, "asks for the messages")
+		let out = messages.messages.filter((message, index) => {
+			console.log(index, "---------------------------", message)
+			if (!message.toPlayers) return true
+			console.log("message is a pm")
+			if (message.sender._id === req.user.id) return true
+			console.log("user did not send the pm")
+			if (message.toPlayers.includes(req.user.id)) return true
+			console.log("user was not a recipient for the pm")
+			return false
+		})
+		res.send(out)
+	} catch (error) {
+		next(error)
+	}
+})
+
 campaignsRouter.post("/", authorize, async (req, res, next) => {
 	try {
 		const newCampaign = new CampaignsModel(req.body)
