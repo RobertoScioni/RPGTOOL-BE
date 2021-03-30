@@ -91,9 +91,9 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("tokens", tokens)
 		res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
-			sameSite: "lax",
-			/* sameSite: "none",
-			secure: true, */
+			//sameSite: "lax",
+			sameSite: "none",
+			secure: true,
 		})
 		res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
