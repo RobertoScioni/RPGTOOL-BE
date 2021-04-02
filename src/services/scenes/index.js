@@ -34,6 +34,7 @@ scenesRouter.get("/:id", authorize, async (req, res, next) => {
 			path: "members",
 			populate: { path: "characters", model: "Character" },
 		})
+		res.send(profile)
 	} catch (error) {
 		next(error)
 	}
