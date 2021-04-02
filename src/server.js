@@ -13,6 +13,7 @@ const usersRouter = require("./services/users")
 const campaignsRouter = require("./services/campaigns")
 const charactersRouter = require("./services/characters")
 const scenesRouter = require("./services/scenes")
+const templatesRouter = require("./services/templates")
 
 const {
 	notFoundHandler,
@@ -56,6 +57,7 @@ server.use("/users", usersRouter)
 server.use("/campaigns", campaignsRouter)
 server.use("/characters", charactersRouter)
 server.use("/scenes", scenesRouter)
+server.use("/templates", templatesRouter)
 
 // ERROR HANDLERS MIDDLEWARES
 
