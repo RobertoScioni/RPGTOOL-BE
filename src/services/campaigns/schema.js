@@ -6,7 +6,14 @@ const CampaignSchema = new Schema(
 		dsc: String,
 		imageUrl: String,
 		owner: { type: Schema.Types.ObjectId, ref: "users" },
-		members: [],
+		members: [
+			{
+				name: String,
+				dsc: String,
+				imageUrl: String,
+				characters: [{ type: Schema.Types.ObjectId, ref: "Character" }],
+			},
+		],
 		scenes: [{ type: Schema.Types.ObjectId, ref: "Scene" }],
 		messages: { type: [], select: false },
 	},

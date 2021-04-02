@@ -29,9 +29,12 @@ campaignsRouter.get("/", authorize, async (req, res, next) => {
 
 campaignsRouter.get("/:id", authorize, async (req, res, next) => {
 	try {
-		const profile = await CampaignsModel.findById(req.params.id).populate(
-			"scenes"
-		)
+		const profile = await CampaignsModel.findById(req.params.id)
+			.populate("scenes")
+			.populate({
+				path: "members",
+				populate: { path: "characters", model: "Character" },
+			})
 		res.send(profile)
 	} catch (error) {
 		next(error)

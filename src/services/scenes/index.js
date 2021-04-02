@@ -30,7 +30,10 @@ scenesRouter.get("/", authorize, async (req, res, next) => {
 scenesRouter.get("/:id", authorize, async (req, res, next) => {
 	try {
 		const profile = await ScenesModel.findById(req.params.id)
-		res.send(profile)
+		res.send(profile).populate({
+			path: "members",
+			populate: { path: "characters", model: "Character" },
+		})
 	} catch (error) {
 		next(error)
 	}
