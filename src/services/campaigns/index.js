@@ -108,6 +108,24 @@ campaignsRouter.post(
 	}
 )
 
+campaignsRouter.post(
+	"/:id/removeScene/:scene",
+	authorize,
+	async (req, res, next) => {
+		try {
+			const campaign = await CampaignsModel.findByIdAndUpdate(req.params.id, {
+				$pull: { scenes: req.params.scene },
+			})
+			//add check for ownership before updating
+
+			//await campaign.save()
+			res.send(campaign)
+		} catch (error) {
+			next(error)
+		}
+	}
+)
+
 campaignsRouter.delete("/:id", authorize, async (req, res, next) => {
 	try {
 		const campaign = await CampaignsModel.findById(req.params.id)
