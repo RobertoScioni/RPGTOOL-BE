@@ -249,14 +249,15 @@ usersRouter.post(
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 
 			const newPost = await UserModel.findByIdAndUpdate(req.user._id, post, {
 				runValidators: true,
 				new: true,
 			})
 			if (newPost) {
-				res.status(201).send("immage updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404

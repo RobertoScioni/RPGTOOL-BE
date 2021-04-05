@@ -82,7 +82,8 @@ scenesRouter.post(
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 			const scene = await ScenesModel.findById(req.params.id)
 			console.log(scene)
 			if (String(scene.owner._id) !== String(req.user._id)) {
@@ -103,7 +104,7 @@ scenesRouter.post(
 				new: true,
 			})
 			if (newPost) {
-				res.status(201).send("immage updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404

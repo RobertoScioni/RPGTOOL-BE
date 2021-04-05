@@ -100,7 +100,8 @@ templateRouter.post(
 			"**********************************************************************"
 		)
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 			console.log("request body", req.body)
 			console.log("request user", req.user)
 			console.log("request id", req.params.id)
@@ -132,7 +133,7 @@ templateRouter.post(
 				}
 			)
 			if (newPost) {
-				res.status(201).send("image updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404
