@@ -141,7 +141,8 @@ campaignsRouter.post(
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 			const campaign = await CampaignsModel.findById(req.params.id)
 			console.log(campaign)
 			if (String(campaign.owner._id) !== String(req.user._id)) {
@@ -166,7 +167,7 @@ campaignsRouter.post(
 				}
 			)
 			if (newPost) {
-				res.status(201).send("immage updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404
