@@ -27,18 +27,20 @@ scenesRouter.get("/", authorize, async (req, res, next) => {
 	}
 })
 
-scenesRouter.get("/:id", authorize, async (req, res, next) => {
-	try {
-		const profile = await ScenesModel.findById(req.params.id)
-		res.send(profile).populate({
-			path: "members",
-			populate: { path: "characters", model: "Character" },
-		})
-		res.send(profile)
-	} catch (error) {
-		next(error)
+scenesRouter.get(
+	"/:id",
+	/* authorize, */ async (req, res, next) => {
+		try {
+			const profile = await ScenesModel.findById(req.params.id).populate({
+				path: "members",
+				populate: { path: "characters", model: "Character" },
+			})
+			res.send(profile)
+		} catch (error) {
+			next(error)
+		}
 	}
-})
+)
 
 scenesRouter.post("/", authorize, async (req, res, next) => {
 	try {

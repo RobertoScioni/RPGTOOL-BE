@@ -5,17 +5,17 @@ const SceneSchema = new Schema(
 		name: String,
 		dsc: String,
 		imageUrl: String,
-		campaign: { type: Schema.Types.ObjectId, ref: "Campaigns" },
 		owner: { type: Schema.Types.ObjectId, ref: "users" },
 		members: [
 			{
 				name: String,
 				dsc: String,
 				imageUrl: String,
-				characters: [{ type: Schema.Types.ObjectId, ref: "Character" }],
+				characters: [{ type: Schema.Types.ObjectId, ref: "Characters" }],
 			},
 		],
-		messages: [
+		campaign: { type: Schema.Types.ObjectId, ref: "Campaigns" },
+		/* messages: [
 			{
 				user: { type: Schema.Types.ObjectId, ref: "users" },
 				recipients: [{ type: Schema.Types.ObjectId, ref: "users" }],
@@ -23,7 +23,7 @@ const SceneSchema = new Schema(
 				message: String,
 				imageUrl: String,
 			},
-		],
+		], */
 	},
 	{ timestamps: true }
 )
