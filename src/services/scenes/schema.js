@@ -7,7 +7,14 @@ const SceneSchema = new Schema(
 		imageUrl: String,
 		campaign: { type: Schema.Types.ObjectId, ref: "Campaigns" },
 		owner: { type: Schema.Types.ObjectId, ref: "users" },
-		members: [],
+		members: [
+			{
+				name: String,
+				dsc: String,
+				imageUrl: String,
+				characters: [{ type: Schema.Types.ObjectId, ref: "Character" }],
+			},
+		],
 		messages: [
 			{
 				user: { type: Schema.Types.ObjectId, ref: "users" },
