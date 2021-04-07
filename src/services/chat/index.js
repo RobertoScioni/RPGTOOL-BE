@@ -159,7 +159,9 @@ const createSocketServer = (server) => {
 							toPlayers.some(
 								(player) =>
 									io.sockets.clients(room._id).sockets[client].user.id ===
-									player._id
+										player._id ||
+									io.sockets.clients(room._id).sockets[client].user.id ===
+										sender._id
 							)
 						)
 							io.to(client).emit("message", messageContent)
