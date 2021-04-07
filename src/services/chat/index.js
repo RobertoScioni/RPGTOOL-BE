@@ -154,6 +154,7 @@ const createSocketServer = (server) => {
 						toCharacters,
 						toPlayers,
 					}
+					toPlayers.push(user._id)
 					for (client in io.sockets.clients(room._id).sockets) {
 						if (
 							toPlayers.some(
@@ -165,7 +166,6 @@ const createSocketServer = (server) => {
 							io.to(client).emit("message", messageContent)
 					}
 					//remember to add self sending for pm's as they stand now you can send them but you will not see them
-					io.to(user).emit("message", messageContent)
 					//save message content in the db
 				}
 				console.log("##############")
