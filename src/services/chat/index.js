@@ -154,7 +154,7 @@ const createSocketServer = (server) => {
 						toCharacters,
 						toPlayers,
 					}
-					toPlayers.push(user._id)
+					toPlayers.push(user)
 					for (client in io.sockets.clients(room._id).sockets) {
 						if (
 							toPlayers.some(
