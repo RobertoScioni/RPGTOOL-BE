@@ -1,4 +1,5 @@
 const express = require("express")
+const ObjectId = require("mongoose").Types.ObjectId
 const multer = require("multer")
 const { CloudinaryStorage } = require("multer-storage-cloudinary")
 const { cloudinary } = require("../../cloudinary")
@@ -20,7 +21,7 @@ charactersRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET Character LIST**********")
 		console.log(req.user)
-		const users = await CharacterModel.find()
+		const users = await CharacterModel.find({ owner: ObjectId(req.user._id) })
 		console.log(users)
 		res.send(users)
 	} catch (error) {
