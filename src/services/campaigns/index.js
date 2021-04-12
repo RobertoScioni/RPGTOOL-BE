@@ -20,9 +20,9 @@ campaignsRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET Campaign LIST**********")
 		console.log(req.user)
-		const users = await CampaignsModel.find(`{
-			"members._id": ObjectId('${req.user._id}'),
-		}`)
+		const users = await CampaignsModel.find({
+			"members._id": ObjectId(req.user._id),
+		})
 		console.log(users)
 		res.send(users)
 	} catch (error) {
