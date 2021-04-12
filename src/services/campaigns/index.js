@@ -25,6 +25,7 @@ campaignsRouter.get("/", authorize, async (req, res, next) => {
 		console.log(users)
 		res.send(users)
 	} catch (error) {
+		console.log(error)
 		next(error)
 	}
 })
