@@ -89,13 +89,13 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("login attempt by user", email)
 		const tokens = await authenticate({ email, password })
 		console.log("tokens", tokens)
-		res.cookie("accessToken", tokens.accessToken, {
+		await res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
 			//sameSite: "lax",
 			sameSite: "none",
 			secure: true,
 		})
-		res.cookie("refreshToken", tokens.refreshToken, {
+		await res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
 			sameSite: "none",
 			secure: true,
