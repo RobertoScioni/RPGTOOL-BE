@@ -100,7 +100,6 @@ usersRouter.post("/login", async (req, res, next) => {
 			sameSite: "none",
 			secure: true,
 		})
-		res.redirect('/campaigns')
 		res.status(200).send({ id: tokens._id })
 	} catch (error) {
 		next(error)
