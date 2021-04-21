@@ -101,7 +101,7 @@ usersRouter.post("/login", async (req, res, next) => {
 			secure: true,
 		})
 		res.redirect('/campaigns')
-		res.send({ id: tokens._id })
+		res.status(200).send({ id: tokens._id })
 	} catch (error) {
 		next(error)
 	}
