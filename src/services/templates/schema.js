@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose")
 
-const CharacterSchema = new Schema({
+const TemplateSchema = new Schema({
 	name: String,
 	dsc: String,
 	imageUrl: String,
@@ -8,4 +8,4 @@ const CharacterSchema = new Schema({
 	owner: { type: Schema.Types.ObjectId, ref: "users" },
 })
 
-module.exports = model("Character", CharacterSchema)
+module.exports = model("Template", TemplateSchema)

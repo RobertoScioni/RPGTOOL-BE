@@ -89,18 +89,20 @@ usersRouter.post("/login",passport.authenticate('local'), async (req, res, next)
 		console.log("login attempt by user", email)
 		const tokens = await authenticate({ email, password })
 		console.log("tokens", tokens)
-		res.cookie("accessToken", tokens.accessToken, {
+		await res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
+
 			sameSite: "lax",
 			//sameSite: "none",
 			//secure: true,
+
 		})
-		res.cookie("refreshToken", tokens.refreshToken, {
+		await res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
 			sameSite: "none",
 			secure: true,
 		})
-		res.send({ id: tokens._id })
+		res.status(200).send({ id: tokens._id })
 	} catch (error) {
 		next(error)
 	} */
@@ -249,14 +251,15 @@ usersRouter.post(
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 
 			const newPost = await UserModel.findByIdAndUpdate(req.user._id, post, {
 				runValidators: true,
 				new: true,
 			})
 			if (newPost) {
-				res.status(201).send("immage updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404

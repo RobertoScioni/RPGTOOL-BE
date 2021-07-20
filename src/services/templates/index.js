@@ -1,5 +1,4 @@
 const express = require("express")
-const ObjectId = require("mongoose").Types.ObjectId
 const multer = require("multer")
 const { CloudinaryStorage } = require("multer-storage-cloudinary")
 const { cloudinary } = require("../../cloudinary")
@@ -13,15 +12,15 @@ const cloudMulter = multer({ storage: cloudStorage })
 
 const { authorize } = require("../../auth")
 
-const CharacterModel = require("./schema")
+const TemplateSchema = require("./schema")
 const UserModel = require("../users/schema")
 
-const charactersRouter = express.Router()
-charactersRouter.get("/", authorize, async (req, res, next) => {
+const templateRouter = express.Router()
+templateRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET Character LIST**********")
 		console.log(req.user)
-		const users = await CharacterModel.find({ owner: ObjectId(req.user._id) })
+		const users = await TemplateSchema.find()
 		console.log(users)
 		res.send(users)
 	} catch (error) {
@@ -29,29 +28,28 @@ charactersRouter.get("/", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.get("/:id", authorize, async (req, res, next) => {
+templateRouter.get("/:id", authorize, async (req, res, next) => {
 	try {
-		const profile = await CharacterModel.findById(req.params.id)
+		const profile = await TemplateSchema.findById(req.params.id)
 		res.send(profile)
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.get("/byUser/:id", authorize, async (req, res, next) => {
+templateRouter.get("/byUser/:id", authorize, async (req, res, next) => {
 	try {
-		const profile = await CharacterModel.find({ owner: req.params.id })
+		const profile = await TemplateSchema.find({ owner: req.params.id })
 		res.send(profile)
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.post("/", authorize, async (req, res, next) => {
+templateRouter.post("/", authorize, async (req, res, next) => {
 	try {
-		const newCharacter = new CharacterModel(req.body)
+		const newCharacter = new TemplateSchema(req.body)
 		newCharacter.owner = req.user._id
-
 		console.log("null? ->", newCharacter._id)
 		const { _id } = await newCharacter.save()
 		console.log("save this inside the user pls", _id)
@@ -71,10 +69,10 @@ charactersRouter.post("/", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.put("/:id", authorize, async (req, res, next) => {
+templateRouter.put("/:id", authorize, async (req, res, next) => {
 	try {
 		const updates = Object.keys(req.body)
-		const character = await CharacterModel.findById(req.params.id)
+		const character = await TemplateSchema.findById(req.params.id)
 		//add check for ownership before updating
 		updates.forEach((update) => (character[update] = req.body[update]))
 		await character.save()
@@ -84,16 +82,16 @@ charactersRouter.put("/:id", authorize, async (req, res, next) => {
 	}
 })
 
-charactersRouter.delete("/:id", authorize, async (req, res, next) => {
+templateRouter.delete("/:id", authorize, async (req, res, next) => {
 	try {
-		const character = await CharacterModel.findById(req.params.id)
+		const character = await TemplateSchema.findById(req.params.id)
 		await character.deleteOne(res.send("Deleted"))
 	} catch (error) {
 		next(error)
 	}
 })
 
-charactersRouter.post(
+templateRouter.post(
 	"/imageUpload/:id",
 	authorize,
 	cloudMulter.single("image"),
@@ -109,7 +107,7 @@ charactersRouter.post(
 			console.log("request id", req.params.id)
 			console.log("request file buffer", req.file.buffer)
 			console.log("help")
-			const character = await CharacterModel.findById(req.params.id)
+			const character = await TemplateSchema.findById(req.params.id)
 			console.log("foundCharacter", character)
 			if (String(character.owner) !== String(req.user._id)) {
 				console.log("owner ", typeof character.owner, character.owner)
@@ -126,7 +124,7 @@ charactersRouter.post(
 			)
 			//res.json({ msg: "image uploaded" })
 
-			const newPost = await CharacterModel.findByIdAndUpdate(
+			const newPost = await TemplateSchema.findByIdAndUpdate(
 				req.params.id,
 				post,
 				{
@@ -148,4 +146,4 @@ charactersRouter.post(
 	}
 )
 
-module.exports = charactersRouter
+module.exports = templateRouter

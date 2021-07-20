@@ -13,6 +13,7 @@ const usersRouter = require("./services/users")
 const campaignsRouter = require("./services/campaigns")
 const charactersRouter = require("./services/characters")
 const scenesRouter = require("./services/scenes")
+const templatesRouter = require("./services/templates")
 
 const {
 	notFoundHandler,
@@ -26,6 +27,9 @@ const httpServer = http.createServer(server)
 createSocketServer(httpServer)
 
 const whitelist = [
+	"https://rpgtool-fe.vercel.app",
+	"https://rpgtool-fe-robertoscioni.vercel.app",
+	"https://rpgtool-fe-bsvlxbd0t-robertoscioni.vercel.app",
 	"http://93.43.219.120",
 	"http://127.0.0.1:3000",
 	"http://localhost:3000",
@@ -53,6 +57,7 @@ server.use("/users", usersRouter)
 server.use("/campaigns", campaignsRouter)
 server.use("/characters", charactersRouter)
 server.use("/scenes", scenesRouter)
+server.use("/templates", templatesRouter)
 
 // ERROR HANDLERS MIDDLEWARES
 

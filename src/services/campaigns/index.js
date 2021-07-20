@@ -1,6 +1,7 @@
 const express = require("express")
 const multer = require("multer")
 const { CloudinaryStorage } = require("multer-storage-cloudinary")
+const ObjectId = require("mongoose").Types.ObjectId
 const { cloudinary } = require("../../cloudinary")
 const cloudStorage = new CloudinaryStorage({
 	cloudinary: cloudinary,
@@ -19,24 +20,33 @@ campaignsRouter.get("/", authorize, async (req, res, next) => {
 	try {
 		console.log("**********GET Campaign LIST**********")
 		console.log(req.user)
-		const users = await CampaignsModel.find()
+		const users = await CampaignsModel.find({
+			"members._id": ObjectId(req.user._id),
+		})
 		console.log(users)
 		res.send(users)
 	} catch (error) {
+		console.log(error)
 		next(error)
 	}
 })
 
-campaignsRouter.get("/:id", authorize, async (req, res, next) => {
-	try {
-		const profile = await CampaignsModel.findById(req.params.id).populate(
-			"scenes"
-		)
-		res.send(profile)
-	} catch (error) {
-		next(error)
+campaignsRouter.get(
+	"/:id",
+	/* authorize, */ async (req, res, next) => {
+		try {
+			const profile = await CampaignsModel.findById(req.params.id)
+				.populate("scenes")
+				.populate({
+					path: "members",
+					populate: { path: "characters", model: "Character" },
+				})
+			res.send(profile)
+		} catch (error) {
+			next(error)
+		}
 	}
-})
+)
 
 campaignsRouter.get("/:id/messages", authorize, async (req, res, next) => {
 	try {
@@ -105,6 +115,24 @@ campaignsRouter.post(
 	}
 )
 
+campaignsRouter.post(
+	"/:id/removeScene/:scene",
+	authorize,
+	async (req, res, next) => {
+		try {
+			const campaign = await CampaignsModel.findByIdAndUpdate(req.params.id, {
+				$pull: { scenes: req.params.scene },
+			})
+			//add check for ownership before updating
+
+			//await campaign.save()
+			res.send(campaign)
+		} catch (error) {
+			next(error)
+		}
+	}
+)
+
 campaignsRouter.delete("/:id", authorize, async (req, res, next) => {
 	try {
 		const campaign = await CampaignsModel.findById(req.params.id)
@@ -120,7 +148,8 @@ campaignsRouter.post(
 	cloudMulter.single("image"),
 	async (req, res, next) => {
 		try {
-			const post = { imageUrl: req.file.path }
+			const imageUrl = req.file.path
+			const post = { imageUrl }
 			const campaign = await CampaignsModel.findById(req.params.id)
 			console.log(campaign)
 			if (String(campaign.owner._id) !== String(req.user._id)) {
@@ -145,7 +174,7 @@ campaignsRouter.post(
 				}
 			)
 			if (newPost) {
-				res.status(201).send("immage updated")
+				res.status(201).send(imageUrl)
 			} else {
 				const error = new Error(`Post with id ${req.params.id} not found`)
 				error.httpStatusCode = 404
