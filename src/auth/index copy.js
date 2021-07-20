@@ -1,5 +1,3 @@
-const passport = require('passport');
-const basic = require('passport-http');
 const jwt = require("jsonwebtoken")
 const UserModel = require("../services/users/schema")
 const mongoose = require("mongoose")
@@ -20,8 +18,6 @@ const newToken = async (payload, expiration) =>
 			}
 		)
 	)
-
-passport.use()
 
 //returns the decoded token or trows an error
 //const verifyToken = (token) => jwt.decode(token, process.env.JWT_SECRET)

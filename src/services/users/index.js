@@ -1,6 +1,7 @@
 const express = require("express")
 const q2m = require("query-to-mongo")
 const multer = require("multer")
+const passport = require("passport")
 const { CloudinaryStorage } = require("multer-storage-cloudinary")
 const { cloudinary } = require("../../cloudinary")
 const cloudStorage = new CloudinaryStorage({
@@ -11,7 +12,6 @@ const cloudStorage = new CloudinaryStorage({
 })
 const cloudMulter = multer({ storage: cloudStorage })
 const { authenticate, refreshTokens, authorize } = require("../../auth")
-const passport = require("passport")
 
 const UserModel = require("./schema")
 const usersRouter = express.Router()
@@ -82,8 +82,8 @@ usersRouter.get(
 		}
 	}
 )
-usersRouter.post("/login", async (req, res, next) => {
-	try {
+usersRouter.post("/login",passport.authenticate('local'), async (req, res, next) => {
+	/* try {
 		const { email, password } = req.body
 		console.log("cookies", req.cookies)
 		console.log("login attempt by user", email)
@@ -91,9 +91,11 @@ usersRouter.post("/login", async (req, res, next) => {
 		console.log("tokens", tokens)
 		await res.cookie("accessToken", tokens.accessToken, {
 			httpOnly: true,
-			//sameSite: "lax",
-			sameSite: "none",
-			secure: true,
+
+			sameSite: "lax",
+			//sameSite: "none",
+			//secure: true,
+
 		})
 		await res.cookie("refreshToken", tokens.refreshToken, {
 			httpOnly: true,
@@ -103,7 +105,7 @@ usersRouter.post("/login", async (req, res, next) => {
 		res.status(200).send({ id: tokens._id })
 	} catch (error) {
 		next(error)
-	}
+	} */
 })
 
 usersRouter.post("/refresh", async (req, res, next) => {
